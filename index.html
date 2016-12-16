@@ -4,71 +4,124 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Hayden Colson's Neighborhood Map</title>
     <style type="text/css">
-      html, body {
+      html, body, #map {
         height: 100%;
+        width: 100%;
+        position: absolute;
         margin: 0;
         padding: 0;
       }
-      #menu {
-        margin:0;
-        padding-top: 1em;
-        width: 100%;
-        height: 12%;
-        background-color: #DDDDDD;
-        color: #3D9970;
+      #side-search {
+        height: 50%;
+        width: 50%;
+        background-color: white;
+        position: absolute;
         text-align: center;
       }
-      #list-view {
-        width: 50%;
-        height: 50%;
-        background-color: white;
+      #filter {
+        width: 90%;
+        margin: 0 auto;
       }
-      #map {
-        height: 100%;
+      @media (min-width: 660px) {
+        #side-search {
+          width: 25%;
+        }
       }
+
+
+
     </style>
   </head>
   <body>
-    <div id="menu">
-      <h1>Tacos Close To Me</h1>
-      <a href="#" data-bind="click: listView">List View</a>
-    </div>
-    <div id="list-view">
 
-    </div>
     <div id="map"></div>
-    <script>
-      // MODEL
-      var Model = [
-      // Array containing location data
+    <div id="side-search">
+      <h3>Filter Nearby Tacos</h3>
+      <input id="filter" type="search" data-bind="textInput: query">
+      <ul data-bind="foreach: filteredLocations">
+        <li class="list_element location" data-bind="text: title, click: $parent.showInfo, visible: showMe"></li>
+      </ul>
+    </div>
 
-      ];
-      //VIEW MODEL
-      var ViewModel = function() {
-      // functions to add markers, show data, filter locations, update infowindow content etc.
-      // Run API calls to get data
-        // Create marker function, opens info window on click,
-        // show list VIEW
-         var showListView = function() {
+<script>
+var map;
+var styles; // add map style if wanted
+// Create a new blank array for all the listing markers.
+var markers = [];
 
-         };
-      };
-      var map;
-      function initMap() {
-        // Add Map Styles
-        var styles; // add object
-        // Constructor creates a new map - only center and zoom are required.
-        map = new google.maps.Map(document.getElementById('map'), {
-          center: {lat: 34.0194543, lng: -118.4911912},
-          zoom: 13,
-          styles: styles,
-          mapTypeControl: false
-        });
-      };
+var locations = [
+  {title: 'Taco Plus', location: {lat: 34.039792, lng: -118.462749}},
+  {title: "Pili's Tacos", location: {lat: 34.041434, lng: -118.460919}},
+  {title: "Tacos Punta Cabras", location: {lat: 34.031109, lng: -118.477382}},
+  {title: "Mondo Taco", location: {lat: 34.026732, lng: -118.474803}},
+  {title: 'Tacoteca', location: {lat: 34.035087, lng: -118.478183}}
+];
+
+
+
+  function initMap() {
+    // Constructor creates a new map - only center and zoom are required.
+    map = new google.maps.Map(document.getElementById('map'), {
+      center: {lat: 34.038004, lng: -118.467396},
+      zoom: 13
+    });
+
+    var largeInfowindow = new google.maps.InfoWindow();
+    var bounds = new google.maps.LatLngBounds();
+
+    // The following group uses the location array to create an array of markers on initialize.
+    for (var i = 0; i < locations.length; i++) {
+      // Get the position from the location array.
+      var position = locations[i].location;
+      var title = locations[i].title;
+      // Create a marker per location, and put into markers array.
+      var marker = new google.maps.Marker({
+        map: map,
+        position: position,
+        title: title,
+        animation: google.maps.Animation.DROP,
+        id: i
+      });
+      // Push the marker to our array of markers.
+      markers.push(marker);
+      // Create an onclick event to open an infowindow at each marker.
+      marker.addListener('click', function() {
+        populateInfoWindow(this, largeInfowindow);
+      });
+      bounds.extend(markers[i].position);
+    }
+    // Extend the boundaries of the map for each marker
+    map.fitBounds(bounds);
+  }
+
+  // This function populates the infowindow when the marker is clicked. We'll only allow
+  // one infowindow which will open at the marker that is clicked, and populate based
+  // on that markers position.
+  function populateInfoWindow(marker, infowindow) {
+    // Check to make sure the infowindow is not already opened on this marker.
+    if (infowindow.marker != marker) {
+      infowindow.marker = marker;
+      infowindow.setContent('<div>' + marker.title + '</div>');
+      infowindow.open(map, marker);
+      // Make sure the marker property is cleared if the infowindow is closed.
+      infowindow.addListener('closeclick',function(){
+        infowindow.setMarker(null);
+      });
+    }
+  }
+
+
+
+
+
+
+
+
     </script>
 
     <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBw_WkVDGpVvg7_Peqts6LWTHtC4-qS1lw&v=3&callback=initMap">
     </script>
+    <script src="js/knockout-3.4.1.js"></script>
   </body>
 </html>
