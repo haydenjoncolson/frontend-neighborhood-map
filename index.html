@@ -38,8 +38,8 @@
     <div id="side-search">
       <h3>Filter Nearby Tacos</h3>
       <input id="filter" type="search" data-bind="textInput: query">
-      <ul data-bind="foreach: filteredLocations">
-        <li class="list_element location" data-bind="text: title, click: $parent.showInfo, visible: showMe"></li>
+      <ul data-bind="foreach: filteredResults">
+        <li data-bind="text: title, visible: display"></li>
       </ul>
     </div>
 
@@ -57,9 +57,43 @@ var locations = [
   {title: 'Tacoteca', location: {lat: 34.035087, lng: -118.478183}}
 ];
 
+// Model
+var Restuarant = function(data) {
+  var self = this;
+  self.title = ko.observable(data.title);
+  self.location = ko.observable(data.location);
+  self.display = ko.observable(true);
+  self.marker = new google.maps.Marker({
+    map: map,
+    title: self.title(),
+    location: self.location(),
+    animation: google.maps.Animation.DROP,
+    id: i
+  });
+  // put yelp api data (rating) self.yelp = ko.observable
+}
 
+var ViewModel = function() {
+  var self = this;
+  self.query = ko.observable("")
+  self.locations =  ko.observableArray(locations);
+  self.filteredResults = ko.observableArray();
+  // For each restaurant, push to filteredResults
+  var restaurant;
+  for (var i = 0; i < locations.length; i++) {
+    restaurant = new Restuarant(locations[i]);
+    self.filteredResults.push(restaurant);
+  }
+  self.filter = ko.computed(function(){
+    var value = self.query();
+    for (var i = 0; i > self.filteredResults().length; i++) {
 
-  function initMap() {
+    }
+  })
+
+}
+
+function initMap() {
     // Constructor creates a new map - only center and zoom are required.
     map = new google.maps.Map(document.getElementById('map'), {
       center: {lat: 34.038004, lng: -118.467396},
@@ -75,13 +109,7 @@ var locations = [
       var position = locations[i].location;
       var title = locations[i].title;
       // Create a marker per location, and put into markers array.
-      var marker = new google.maps.Marker({
-        map: map,
-        position: position,
-        title: title,
-        animation: google.maps.Animation.DROP,
-        id: i
-      });
+      var marker =
       // Push the marker to our array of markers.
       markers.push(marker);
       // Create an onclick event to open an infowindow at each marker.
@@ -109,7 +137,6 @@ var locations = [
       });
     }
   }
-
 
 
 
