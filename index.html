@@ -63,14 +63,8 @@ var Restuarant = function(data) {
   self.title = ko.observable(data.title);
   self.location = ko.observable(data.location);
   self.display = ko.observable(true);
-  self.marker = new google.maps.Marker({
-    map: map,
-    title: self.title(),
-    location: self.location(),
-    animation: google.maps.Animation.DROP,
-    id: i
-  });
-  // put yelp api data (rating) self.yelp = ko.observable
+  // self.marker =
+  // self.yelp data rrom yelp api (rating)
 }
 
 var ViewModel = function() {
@@ -84,12 +78,7 @@ var ViewModel = function() {
     restaurant = new Restuarant(locations[i]);
     self.filteredResults.push(restaurant);
   }
-  self.filter = ko.computed(function(){
-    var value = self.query();
-    for (var i = 0; i > self.filteredResults().length; i++) {
 
-    }
-  })
 
 }
 
@@ -109,7 +98,13 @@ function initMap() {
       var position = locations[i].location;
       var title = locations[i].title;
       // Create a marker per location, and put into markers array.
-      var marker =
+      var marker = new google.maps.Marker({
+        map: map,
+        position: position,
+        title: title,
+        animation: google.maps.Animation.DROP,
+        id: i
+      });
       // Push the marker to our array of markers.
       markers.push(marker);
       // Create an onclick event to open an infowindow at each marker.
