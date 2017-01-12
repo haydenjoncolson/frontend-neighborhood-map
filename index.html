@@ -20,7 +20,18 @@
       }
       #filter {
         width: 90%;
-        margin: 0 auto;
+        margin: 0;
+      }
+      #resultList {
+        text-align: left;
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+      .resultItem {
+        margin: 1em;
+        border-bottom-style: solid;
+        padding-bottom: 1em
       }
       @media (min-width: 660px) {
         #side-search {
@@ -31,6 +42,7 @@
 
 
     </style>
+    <script src="js/knockout-3.4.1.js"></script>
   </head>
   <body>
 
@@ -38,8 +50,8 @@
     <div id="side-search">
       <h3>Filter Nearby Tacos</h3>
       <input id="filter" type="search" data-bind="textInput: query">
-      <ul data-bind="foreach: filteredResults">
-        <li data-bind="text: title, visible: display"></li>
+      <ul id="resultList" data-bind="foreach: filteredResults">
+        <li class="resultItem" data-bind="text: title, visible: display, click: $root.filter"></li>
       </ul>
     </div>
 
@@ -49,6 +61,8 @@ var styles; // add map style if wanted
 // Create a new blank array for all the listing markers.
 var markers = [];
 
+var viewModel;
+
 var locations = [
   {title: 'Taco Plus', location: {lat: 34.039792, lng: -118.462749}},
   {title: "Pili's Tacos", location: {lat: 34.041434, lng: -118.460919}},
@@ -56,32 +70,6 @@ var locations = [
   {title: "Mondo Taco", location: {lat: 34.026732, lng: -118.474803}},
   {title: 'Tacoteca', location: {lat: 34.035087, lng: -118.478183}}
 ];
-
-// Model
-var Restuarant = function(data) {
-  var self = this;
-  self.title = ko.observable(data.title);
-  self.location = ko.observable(data.location);
-  self.display = ko.observable(true);
-  // self.marker =
-  // self.yelp data rrom yelp api (rating)
-}
-
-var ViewModel = function() {
-  var self = this;
-  self.query = ko.observable("")
-  self.locations =  ko.observableArray(locations);
-  self.filteredResults = ko.observableArray();
-  // For each restaurant, push to filteredResults
-  var restaurant;
-  for (var i = 0; i < locations.length; i++) {
-    restaurant = new Restuarant(locations[i]);
-    self.filteredResults.push(restaurant);
-  }
-
-
-}
-
 function initMap() {
     // Constructor creates a new map - only center and zoom are required.
     map = new google.maps.Map(document.getElementById('map'), {
@@ -135,8 +123,68 @@ function initMap() {
 
 
 
+// Model
+var Restaurant = function(data) {
+  var self = this;
+  self.title = data.title;
+  self.location = ko.observable(data.location);
+  self.display = ko.observable(true);
+  // self.marker
+
+  // self.yelp data rrom yelp api (rating)
+}
 
 
+// Class
+// Constructor function
+// Function expression
+// new operator
+ViewModel = function() {
+  var self = this;
+  self.query = ko.observable("")
+  self.locations =  ko.observableArray(locations);
+  self.filteredResults = ko.observableArray();
+  // For each restaurant, push to filteredResults
+  var restaurant;
+  for (var i = 0; i < locations.length; i++) {
+    restaurant = new Restaurant(locations[i]);
+    self.filteredResults.push(restaurant);
+  }
+
+
+    //filter the items using the filter text
+  self.filter = ko.computed(function() {
+        var filter = self.query().toLowerCase();
+        if (!filter) {
+            return self.locations();
+        } else {
+            return ko.utils.arrayFilter(self.locations(), function(location) {
+                return location.title.toLowerCase();
+            });
+        }
+    }, viewModel);
+
+
+  };
+
+  //http://knockoutjs.com/documentation/computedObservables.html
+  self.writeToConsole = ko.computed(function() {
+    //console.log(self.query());
+  });
+
+
+
+
+
+
+
+
+   // Instantiate an instance of ViewModel
+   // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new
+   viewModel = new ViewModel();
+
+   // Activate Knockout
+   ko.applyBindings(viewModel);
 
 
     </script>
@@ -144,6 +192,5 @@ function initMap() {
     <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBw_WkVDGpVvg7_Peqts6LWTHtC4-qS1lw&v=3&callback=initMap">
     </script>
-    <script src="js/knockout-3.4.1.js"></script>
   </body>
 </html>
