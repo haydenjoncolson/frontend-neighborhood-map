@@ -43,6 +43,8 @@
 
     </style>
     <script src="js/knockout-3.4.1.js"></script>
+    <script src="js/oauth-signature.min.js"></script>
+    <script src="js/jquery-3.1.1.min.js"></script>
   </head>
   <body>
 
@@ -50,14 +52,16 @@
     <div id="side-search">
       <h3>Filter Nearby Tacos</h3>
       <input id="filter" type="search" data-bind="textInput: query">
-      <ul id="resultList" data-bind="foreach: filteredResults">
-        <li class="resultItem" data-bind="text: title, visible: display, click: $root.filter"></li>
+      <ul id="resultList" data-bind="foreach: filter">
+        <li class="resultItem" data-bind="text: title, click: $root.listClick"></li>
       </ul>
     </div>
 
 <script>
-var map;
-var styles; // add map style if wanted
+var map,
+    largeInfowindow,
+    styles; // add map style if wanted
+
 // Create a new blank array for all the listing markers.
 var markers = [];
 
@@ -77,7 +81,7 @@ function initMap() {
       zoom: 13
     });
 
-    var largeInfowindow = new google.maps.InfoWindow();
+    largeInfowindow = new google.maps.InfoWindow();
     var bounds = new google.maps.LatLngBounds();
 
     // The following group uses the location array to create an array of markers on initialize.
@@ -95,6 +99,8 @@ function initMap() {
       });
       // Push the marker to our array of markers.
       markers.push(marker);
+
+      locations[i].marker = marker;
       // Create an onclick event to open an infowindow at each marker.
       marker.addListener('click', function() {
         populateInfoWindow(this, largeInfowindow);
@@ -104,6 +110,48 @@ function initMap() {
     // Extend the boundaries of the map for each marker
     map.fitBounds(bounds);
   }
+
+  function nonce_generate() {
+    return (Math.floor(Math.random() * 1e12).toString());
+  }
+  var yelp_url = 'https://api.yelp.com/v2/search?term=' + locations.title;
+
+YELP_KEY = "0f26FrFmynoUxOsoj6ZNqg";
+YELP_KEY_SECRET = "0f26FrFmynoUxOsoj6ZNqg";
+YELP_TOKEN = "rCnkaW9RVoPkQ9ftSYefJ_bDmdMTH4U6";
+YELP_TOKEN_SECRET = "XKO1NGcDAmgnEB8Zf3E2h_56u6s";
+
+var parameters = {
+  oauth_consumer_key: YELP_KEY,
+  oauth_token: YELP_TOKEN,
+  oauth_nonce: nonce_generate(),
+  oauth_timestamp: Math.floor(Date.now()/1000),
+  oauth_signature_method: 'HMAC-SHA1',
+  oauth_version : '1.0',
+  callback: 'cb',           // This is crucial to include for jsonp implementation in AJAX or else the oauth-signature will be wrong.
+  location : 'Santa+Monica+California',
+  term : 'food'
+};
+
+var encodedSignature = oauthSignature.generate('GET',yelp_url, parameters, YELP_KEY_SECRET, YELP_TOKEN_SECRET);
+parameters.oauth_signature = encodedSignature;
+
+var settings = {
+  url: yelp_url,
+  data: parameters,
+  cache: true,                // This is crucial to include as well to prevent jQuery from adding on a cache-buster parameter "_=23489489749837", invalidating our oauth-signature
+  dataType: 'jsonp',
+  success: function(yelpResults) {
+    // Do stuff with results
+    console.log(yelpResults);
+  },
+  fail: function(xhr, status, error) {
+    console.log("An AJAX error occured: " + status + "\nError: " + error + "\nError detail: " + xhr.responseText);
+  }
+};
+
+// Send AJAX query via jQuery library.
+$.ajax(settings);
 
   // This function populates the infowindow when the marker is clicked. We'll only allow
   // one infowindow which will open at the marker that is clicked, and populate based
@@ -115,9 +163,9 @@ function initMap() {
       infowindow.setContent('<div>' + marker.title + '</div>');
       infowindow.open(map, marker);
       // Make sure the marker property is cleared if the infowindow is closed.
-      infowindow.addListener('closeclick',function(){
-        infowindow.setMarker(null);
-      });
+      // infowindow.addListener('closeclick',function(){
+      //   infowindow.setMarker(null);
+      // });
     }
   }
 
@@ -141,15 +189,15 @@ var Restaurant = function(data) {
 // new operator
 ViewModel = function() {
   var self = this;
-  self.query = ko.observable("")
+  self.query = ko.observable("");
   self.locations =  ko.observableArray(locations);
-  self.filteredResults = ko.observableArray();
-  // For each restaurant, push to filteredResults
-  var restaurant;
-  for (var i = 0; i < locations.length; i++) {
-    restaurant = new Restaurant(locations[i]);
-    self.filteredResults.push(restaurant);
-  }
+  // self.filteredResults = ko.observableArray();
+  // // For each restaurant, push to filteredResults
+  // var restaurant;
+  // for (var i = 0; i < locations.length; i++) {
+  //   restaurant = new Restaurant(locations[i]);
+  //   self.filteredResults.push(restaurant);
+  // }
 
 
     //filter the items using the filter text
@@ -158,21 +206,30 @@ ViewModel = function() {
         if (!filter) {
             return self.locations();
         } else {
-            return ko.utils.arrayFilter(self.locations(), function(location) {
-                return location.title.toLowerCase();
+            var newArray = ko.utils.arrayFilter(self.locations(), function(location) {
+                //return location.title.toLowerCase();
+                if (location.title.toLowerCase().indexOf(filter) === -1) {
+                  return false;
+                } else {
+                  return true;
+                }
             });
+
+            return newArray;
         }
     }, viewModel);
+
+    self.listClick = function(restaurant) {
+      populateInfoWindow(restaurant.marker, largeInfowindow);
+    };
 
 
   };
 
   //http://knockoutjs.com/documentation/computedObservables.html
-  self.writeToConsole = ko.computed(function() {
+//  self.writeToConsole = ko.computed(function() {
     //console.log(self.query());
-  });
-
-
+  //});
 
 
 
@@ -187,10 +244,11 @@ ViewModel = function() {
    ko.applyBindings(viewModel);
 
 
-    </script>
+</script>
 
     <script async defer
         src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBw_WkVDGpVvg7_Peqts6LWTHtC4-qS1lw&v=3&callback=initMap">
     </script>
+
   </body>
 </html>
