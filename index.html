@@ -43,8 +43,7 @@
 
     </style>
     <script src="js/knockout-3.4.1.js"></script>
-    <script src="js/oauth-signature.min.js"></script>
-    <script src="js/jquery-3.1.1.min.js"></script>
+
   </head>
   <body>
 
@@ -65,14 +64,17 @@ var map,
 // Create a new blank array for all the listing markers.
 var markers = [];
 
+var CLIENT_ID = "DMLIWBSJSUZ13YSSHU1HUCTQ1AQVINBJVSSU5WB55PBGMOGB",
+    CLIENT_SECRET = "WONXX20DUNUG4HQ2P0RCAMIMLJKWYAB3F0JXSCGIORVFS4MI";
+
 var viewModel;
 
 var locations = [
-  {title: 'Taco Plus', location: {lat: 34.039792, lng: -118.462749, id: '4aefb029f964a520e4d921e3'}},
-  {title: "Pili's Tacos", location: {lat: 34.041434, lng: -118.460919, id: '4bce16dacc8cd13a15b9c3cf'}},
-  {title: "Tacos Punta Cabras", location: {lat: 34.031109, lng: -118.477382, id: '51146ef8e4b0bdd77b8c1af7'}},
-  {title: "Mondo Taco", location: {lat: 34.026732, lng: -118.474803, id: '500b50ebe4b084af1e3a8420'}},
-  {title: 'Tacoteca', location: {lat: 34.035087, lng: -118.478183, id: '548bb3bf498e486d0cc82af9'}}
+  {title: 'Taco Plus', location: {lat: 34.039792, lng: -118.462749}, id: '4aefb029f964a520e4d921e3'},
+  {title: "Pili's Tacos", location: {lat: 34.041434, lng: -118.460919}, id: '4bce16dacc8cd13a15b9c3cf'},
+  {title: "Tacos Punta Cabras", location: {lat: 34.031109, lng: -118.477382}, id: '51146ef8e4b0bdd77b8c1af7'},
+  {title: "Mondo Taco", location: {lat: 34.026732, lng: -118.474803}, id: '500b50ebe4b084af1e3a8420'},
+  {title: 'Tacoteca', location: {lat: 34.035087, lng: -118.478183}, id: '548bb3bf498e486d0cc82af9'}
 ];
 function initMap() {
     // Constructor creates a new map - only center and zoom are required.
@@ -102,7 +104,7 @@ function initMap() {
 
       locations[i].marker = marker;
 
-    
+
 
 
       // Create an onclick event to open an infowindow at each marker.
@@ -110,6 +112,11 @@ function initMap() {
         populateInfoWindow(this, largeInfowindow);
       });
       bounds.extend(markers[i].position);
+
+      //     Foursqaure included in loop
+              console.log(locations[i]);
+
+
     }
     // Extend the boundaries of the map for each marker
     map.fitBounds(bounds);
@@ -186,6 +193,30 @@ ViewModel = function() {
     self.listClick = function(restaurant) {
       populateInfoWindow(restaurant.marker, largeInfowindow);
     };
+
+    self.foursquare = function() {
+      $.ajax({
+            url:'https://api.foursquare.com/v2/venues/search',
+            dataType: 'json',
+            data: 'limit=1' +
+                '&ll=34.038004,-118.467396' +
+                '&query=' + location[i].name +
+                '&client_id='+ CLIENT_ID +
+                '&client_secret='+ CLIENT_SECRET +
+                '&v=20130815',
+
+            async: true,
+
+            success: function(data) {
+              console.log(data)
+            },
+            error: function(e) {
+      				console.log("foursquare error");
+      		  }
+        });
+      };
+
+
 
 
   };
