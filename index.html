@@ -108,15 +108,15 @@ function initMap() {
       locations[i].marker = marker;
 
 
-       marker.bounce = function() {
-        this.setAnimation(google.maps.Animation.BOUNCE);
-      }
+
 
       // Create an onclick event to open an infowindow at each marker.
       marker.addListener('click', function() {
         populateInfoWindow(this, largeInfowindow);
-        marker.bounce();
-        console.log(this);
+        this.setAnimation(google.maps.Animation.BOUNCE);
+        
+
+
 
 
       });
@@ -183,6 +183,8 @@ foursquare(locations[i].title);
       infowindow.marker = marker;
       infowindow.setContent('<div>' + '<p>' + name + '</p>' + '<p>' + url + '</p>' + '</div>');
       infowindow.open(map, marker);
+
+      console.log(marker);
 
       // Make sure the marker property is cleared if the infowindow is closed.
       // infowindow.addListener('closeclick',function(){
