@@ -61,6 +61,8 @@
 var map,
     largeInfowindow,
     styles; // add map style if wanted
+    var name,
+        url;
 
 // Create a new blank array for all the listing markers.
 var markers = [];
@@ -106,17 +108,64 @@ function initMap() {
       locations[i].marker = marker;
 
 
-
+       marker.bounce = function() {
+        this.setAnimation(google.maps.Animation.BOUNCE);
+      }
 
       // Create an onclick event to open an infowindow at each marker.
       marker.addListener('click', function() {
         populateInfoWindow(this, largeInfowindow);
+        marker.bounce();
+        console.log(this);
+
+
       });
       bounds.extend(markers[i].position);
 
       //     Foursqaure included in loop
-            //  console.log(locations[i]);
+             //console.log(locations[i]);
 
+
+      var foursquare = function(location) {
+        //    Turn into loop
+              $.ajax({
+                    url:'https://api.foursquare.com/v2/venues/search',
+                    dataType: 'json',
+                    data: 'limit=1' +
+                        '&ll=34.038004,-118.467396' +
+                        '&query=' + location +
+                        '&client_id='+ CLIENT_ID +
+                        '&client_secret='+ CLIENT_SECRET +
+                        '&v=20130815',
+
+                    async: true,
+
+                    success: function(data) {
+                      //console.log("success")
+                      //console.log(data);
+                      var venues = data.response.venues;
+
+                      name = venues[0].name;
+
+                      url = venues[0].url;
+                      console.log(name, url);
+
+
+
+
+
+
+
+
+                    },
+
+
+                    error: function(e) {
+              				console.log("foursquare error");
+              		  }
+                });
+              };
+foursquare(locations[i].title);
 
     }
     // Extend the boundaries of the map for each marker
@@ -132,8 +181,9 @@ function initMap() {
     // Check to make sure the infowindow is not already opened on this marker.
     if (infowindow.marker != marker) {
       infowindow.marker = marker;
-      infowindow.setContent('<div>' + marker.title + '</div>');
+      infowindow.setContent('<div>' + '<p>' + name + '</p>' + '<p>' + url + '</p>' + '</div>');
       infowindow.open(map, marker);
+
       // Make sure the marker property is cleared if the infowindow is closed.
       // infowindow.addListener('closeclick',function(){
       //   infowindow.setMarker(null);
@@ -201,31 +251,10 @@ ViewModel = function() {
       populateInfoWindow(restaurant.marker, largeInfowindow);
     };
 
-    self.foursquare = function(location) {
-//    Turn into loop
-      $.ajax({
-            url:'https://api.foursquare.com/v2/venues/search',
-            dataType: 'json',
-            data: 'limit=10' +
-                '&ll=34.038004,-118.467396' +
-                '&query=' + location +
-                '&client_id='+ CLIENT_ID +
-                '&client_secret='+ CLIENT_SECRET +
-                '&v=20130815',
+  //  self.foursquare =
 
-            async: true,
+    //  self.foursquare("Santa Monica");
 
-            success: function(data) {
-              console.log("success")
-              console.log(data);
-            },
-            error: function(e) {
-      				console.log("foursquare error");
-      		  }
-        });
-      };
-
-  self.foursquare("Santa Monica");
 
 
 
