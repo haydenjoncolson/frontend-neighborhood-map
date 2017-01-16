@@ -195,12 +195,13 @@ ViewModel = function() {
     };
 
     self.foursquare = function() {
+//    Turn into loop
       $.ajax({
             url:'https://api.foursquare.com/v2/venues/search',
             dataType: 'json',
             data: 'limit=1' +
                 '&ll=34.038004,-118.467396' +
-                '&query=' + location[i].name +
+                '&query=' + location[i].title +
                 '&client_id='+ CLIENT_ID +
                 '&client_secret='+ CLIENT_SECRET +
                 '&v=20130815',
@@ -208,7 +209,7 @@ ViewModel = function() {
             async: true,
 
             success: function(data) {
-              console.log(data)
+              console.log("success")
             },
             error: function(e) {
       				console.log("foursquare error");
