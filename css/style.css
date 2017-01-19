@@ -1,0 +1,34 @@
+html, body, #map {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  margin: 0;
+  padding: 0;
+}
+#side-search {
+  height: 50%;
+  width: 50%;
+  background-color: white;
+  position: absolute;
+  text-align: center;
+}
+#filter {
+  width: 90%;
+  margin: 0;
+}
+#resultList {
+  text-align: left;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.resultItem {
+  margin: 1em;
+  border-bottom-style: solid;
+  padding-bottom: 1em
+}
+@media (min-width: 660px) {
+  #side-search {
+    width: 25%;
+  }
+}
