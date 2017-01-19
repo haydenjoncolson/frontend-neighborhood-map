@@ -181,7 +181,7 @@ foursquare(locations[i].title);
     // Check to make sure the infowindow is not already opened on this marker.
     if (infowindow.marker != marker) {
       infowindow.marker = marker;
-      infowindow.setContent('<div>' + '<p>' + name + '</p>' + '<p>' + url + '</p>' + '</div>');
+      infowindow.setContent('<div>' + '<p>' + marker.venueName + '</p>' + '<p>' + marker.venueUrl + '</p>' + '</div>');
       infowindow.open(map, marker);
 
       console.log(marker);
