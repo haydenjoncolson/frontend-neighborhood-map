@@ -85,14 +85,19 @@ function initMap() {
                       var venues = data.response.venues;
 
                       location.marker.venueName = venues[0].name;
-
-
+                      //if (venues[0].url != undefined) {
                       location.marker.venueUrl = venues[0].url;
-                      console.log(marker);
+                    //  } else {
+                        //  location.marker.venueUrl = "";
+                    //  }
+
+
+                      //console.log(marker);
 
                     },
                     error: function(e) {
-              				console.log("foursquare error");
+              				alert("issue connecting to foursquare");
+
               		  }
                 });
               };
@@ -104,7 +109,9 @@ function initMap() {
     //end of map
 }
 
+function foursqaureError() {
 
+}
 
   // This function populates the infowindow when the marker is clicked. We'll only allow
   // one infowindow which will open at the marker that is clicked, and populate based
@@ -117,7 +124,11 @@ function initMap() {
       setTimeout(function () {
         marker.setAnimation(null);
       }, 700);
-      infowindow.setContent('<div>' + '<p>' + marker.venueName + '</p>' + '<p>' + marker.venueUrl + '</p>' + '</div>');
+      if (marker.venueUrl != undefined) {
+        infowindow.setContent('<div>' + '<p>' + marker.venueName + '</p>' + '<a href="' + marker.venueUrl + '">' + marker.venueUrl + '</a>' + '</div>');
+      } else {
+        infowindow.setContent('<div>' + '<p>' + marker.venueName + '</p>' + 'Website Not Available' + '</div>');
+      }
       infowindow.open(map, marker);
 
       console.log(marker);
@@ -216,5 +227,5 @@ ViewModel = function() {
    ko.applyBindings(viewModel);
 
    function googleError() {
-       return "Problem loading google";
+       alert("Problem loading google");
    };

@@ -2,7 +2,7 @@
 
 ### Components
 
-Uses JavaScript, jQuery, knockoutJS, Google Maps and Foursquare APIs
+Uses JavaScript, jQuery, knockoutJS, Google Maps and name and url data from Foursquare APIs
 
 - - - -
 ### How to open
