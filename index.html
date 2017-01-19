@@ -61,8 +61,7 @@
 var map,
     largeInfowindow,
     styles; // add map style if wanted
-    var name,
-        url;
+
 
 // Create a new blank array for all the listing markers.
 var markers = [];
@@ -71,6 +70,7 @@ var CLIENT_ID = "DMLIWBSJSUZ13YSSHU1HUCTQ1AQVINBJVSSU5WB55PBGMOGB",
     CLIENT_SECRET = "WONXX20DUNUG4HQ2P0RCAMIMLJKWYAB3F0JXSCGIORVFS4MI";
 
 var viewModel;
+var marker;
 
 var locations = [
   {title: 'Taco Plus', location: {lat: 34.039792, lng: -118.462749}, id: '4aefb029f964a520e4d921e3'},
@@ -95,7 +95,7 @@ function initMap() {
       var position = locations[i].location;
       var title = locations[i].title;
       // Create a marker per location, and put into markers array.
-      var marker = new google.maps.Marker({
+        marker = new google.maps.Marker({
         map: map,
         position: position,
         title: title,
@@ -114,12 +114,12 @@ function initMap() {
       marker.addListener('click', function() {
         populateInfoWindow(this, largeInfowindow);
         this.setAnimation(google.maps.Animation.BOUNCE);
-
-
-
-
-
+        setTimeout(function () {
+          marker.setAnimation(null);
+        }, 700);
       });
+
+
       bounds.extend(markers[i].position);
 
       //     Foursqaure included in loop
@@ -128,12 +128,14 @@ function initMap() {
 
       var foursquare = function(location) {
         //    Turn into loop
+        var name,
+            url;
               $.ajax({
                     url:'https://api.foursquare.com/v2/venues/search',
                     dataType: 'json',
                     data: 'limit=1' +
                         '&ll=34.038004,-118.467396' +
-                        '&query=' + location +
+                        '&query=' + location.title +
                         '&client_id='+ CLIENT_ID +
                         '&client_secret='+ CLIENT_SECRET +
                         '&v=20130815',
@@ -145,32 +147,24 @@ function initMap() {
                       //console.log(data);
                       var venues = data.response.venues;
 
-                      name = venues[0].name;
+                      marker.venueName = venues[0].name;
 
-                      url = venues[0].url;
-                      console.log(name, url);
-
-
-
-
-
-
-
+                      marker.venueUrl = venues[0].url;
+                      console.log(marker);
 
                     },
-
-
                     error: function(e) {
               				console.log("foursquare error");
               		  }
                 });
               };
-foursquare(locations[i].title);
+        foursquare(locations[i]);
 
     }
     // Extend the boundaries of the map for each marker
     map.fitBounds(bounds);
-  }
+    //end of map
+}
 
 
 
@@ -181,7 +175,7 @@ foursquare(locations[i].title);
     // Check to make sure the infowindow is not already opened on this marker.
     if (infowindow.marker != marker) {
       infowindow.marker = marker;
-      infowindow.setContent('<div>' + '<p>' + name + '</p>' + '<p>' + url + '</p>' + '</div>');
+      infowindow.setContent('<div>' + '<p>' + marker.venueName + '</p>' + '<p>' + marker.venueUrl + '</p>' + '</div>');
       infowindow.open(map, marker);
 
       console.log(marker);
